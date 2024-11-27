@@ -3,18 +3,18 @@ package ca.sheridancollege.project;
 import java.util.ArrayList;
 
 public class WarGame extends Game {
-    private GroupOfCards deck; // The deck of cards used in the game
+    private GroupOfCards deck; 
 
     public WarGame(String name) {
         super(name);
-        deck = new GroupOfCards(52); // Standard deck of 52 cards
-        initializeDeck(); // Initialize the deck
+        deck = new GroupOfCards(52); 
+        initializeDeck(); 
     }
 
     private void initializeDeck() {
         String[] suits = {"Hearts", "Diamonds", "Clubs", "Spades"};
         for (String suit : suits) {
-            for (int value = 2; value <= 14; value++) { // Ace high (14)
+            for (int value = 2; value <= 14; value++) { 
                 deck.addCard(new PlayingCard(suit, value));
             }
         }
@@ -22,22 +22,22 @@ public class WarGame extends Game {
 
     @Override
     public void play() {
-        deck.shuffle(); // Shuffle the deck before playing
-        dealCards(); // Distribute the cards equally to players
+        deck.shuffle(); 
+        dealCards(); 
 
         while (playersStillInGame()) {
             System.out.println("Current card counts: " +
                 getPlayers().get(0).getPlayerName() + ": " + ((WarPlayer) getPlayers().get(0)).getHandSize() +
                 ", " + getPlayers().get(1).getPlayerName() + ": " + ((WarPlayer) getPlayers().get(1)).getHandSize());
 
-            playRound(); // Play one round
+            playRound(); 
         }
-        declareWinner(); // Declare the winner
+        declareWinner(); 
     }
 
-    private void dealCards() {
+    protected void dealCards() {
         int playerCount = getPlayers().size();
-        for (int i = 0; i < 52; i++) { // 52 cards in total
+        for (int i = 0; i < 52; i++) {
             WarPlayer player = (WarPlayer) getPlayers().get(i % playerCount);
             player.receiveCard(deck.dealCard());
         }
@@ -56,18 +56,16 @@ public class WarGame extends Game {
         Card card1 = player1.playCard();
         Card card2 = player2.playCard();
 
-        // If either player has no more cards, the game ends
         if (card1 == null || card2 == null) {
-            return; // Stops the game if any player runs out of cards
+            return; 
         }
 
         System.out.println(player1.getPlayerName() + " plays: " + card1);
         System.out.println(player2.getPlayerName() + " plays: " + card2);
 
-        // Compare card values to determine the round's winner
         if (card1.getValue() > card2.getValue()) {
             System.out.println(player1.getPlayerName() + " wins the round.");
-            player1.receiveCard(card1); // Winner takes both cards
+            player1.receiveCard(card1);
             player1.receiveCard(card2);
         } else if (card2.getValue() > card1.getValue()) {
             System.out.println(player2.getPlayerName() + " wins the round.");
@@ -79,63 +77,67 @@ public class WarGame extends Game {
         }
     }
 
-    private void handleWar(WarPlayer player1, WarPlayer player2, Card card1, Card card2) {
-        ArrayList<Card> warPile = new ArrayList<>(); // Collect cards in the war pile
-        warPile.add(card1);
-        warPile.add(card2);
+    public void handleWar(WarPlayer player1, WarPlayer player2, Card card1, Card card2) {
+    ArrayList<Card> warPile = new ArrayList<>();
+    warPile.add(card1);
+    warPile.add(card2);
 
-        // Check if both players have enough cards to continue the war
-        if (player1.getHandSize() < 4) {
-            System.out.println(player1.getPlayerName() + " doesn't have enough cards to continue the war. " + player2.getPlayerName() + " wins!");
-            player2.receiveCards(warPile); // Player 2 takes all war cards
-            return;
-        }
-        if (player2.getHandSize() < 4) {
-            System.out.println(player2.getPlayerName() + " doesn't have enough cards to continue the war. " + player1.getPlayerName() + " wins!");
-            player1.receiveCards(warPile); // Player 1 takes all war cards
-            return;
-        }
-
-        // Players place 3 cards face down and play 1 card face up
+    while (true) {
         for (int i = 0; i < 3; i++) {
-            if (player1.hasCards()) warPile.add(player1.playCard()); // Adds 3 cards face down
-            if (player2.hasCards()) warPile.add(player2.playCard());
+            if (player1.hasCards()) {
+                warPile.add(player1.playCard());
+            }
+            if (player2.hasCards()) {
+                warPile.add(player2.playCard());
+            }
         }
 
         Card warCard1 = player1.playCard();
         Card warCard2 = player2.playCard();
 
-        System.out.println(player1.getPlayerName() + " plays: " + warCard1 + " (War)");
-        System.out.println(player2.getPlayerName() + " plays: " + warCard2 + " (War)");
+        if (warCard1 == null || warCard2 == null) {
+            break;
+        }
 
-        // Compare the war cards to determine the winner
+        System.out.println(player1.getPlayerName() + " plays: " + warCard1);
+        System.out.println(player2.getPlayerName() + " plays: " + warCard2);
+
         if (warCard1.getValue() > warCard2.getValue()) {
             System.out.println(player1.getPlayerName() + " wins the War.");
-            player1.receiveCards(warPile); // Winner takes all war cards
-            player1.receiveCard(warCard1); // Give the card played in war
-            player1.receiveCard(warCard2); // Give the losing card in war as well
+            player1.receiveCard(warCard1);
+            player1.receiveCard(warCard2);
+            for (Card c : warPile) { 
+                player1.receiveCard(c);
+            }
+            break;
         } else if (warCard2.getValue() > warCard1.getValue()) {
             System.out.println(player2.getPlayerName() + " wins the War.");
-            player2.receiveCards(warPile); // Winner takes all war cards
-            player2.receiveCard(warCard1); // Give the card played in war
-            player2.receiveCard(warCard2); // Give the losing card in war as well
+            player2.receiveCard(warCard1);
+            player2.receiveCard(warCard2);
+            for (Card c : warPile) { 
+                player2.receiveCard(c);
+            }
+            break;
         } else {
-            System.out.println("It's a tie again! Another war should occur.");
-            // Add further handling if you want to keep playing in case of a tie
+            System.out.println("The War continues...");
+            warPile.add(warCard1);
+            warPile.add(warCard2);
         }
     }
+}
+
 
     @Override
     public void declareWinner() {
         WarPlayer player1 = (WarPlayer) getPlayers().get(0);
         WarPlayer player2 = (WarPlayer) getPlayers().get(1);
-        
+
         if (player1.getHandSize() > player2.getHandSize()) {
-            System.out.println(player1.getPlayerName() + " wins the game with " + player1.getHandSize() + " cards.");
+            System.out.println(player1.getPlayerName() + " wins the game!");
         } else if (player2.getHandSize() > player1.getHandSize()) {
-            System.out.println(player2.getPlayerName() + " wins the game with " + player2.getHandSize() + " cards.");
+            System.out.println(player2.getPlayerName() + " wins the game!");
         } else {
-            System.out.println("The game ends in a tie!");
+            System.out.println("The game ends in a draw!");
         }
     }
 }
