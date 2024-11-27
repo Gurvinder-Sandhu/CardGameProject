@@ -11,17 +11,10 @@ package ca.sheridancollege.project;
  */
 public class Main {
     public static void main(String[] args) {
-        // Create and start the game
-        WarGame warGame = new WarGame("War Card Game");
+        WarGame game = new WarGame("War");
+        game.addPlayer(new WarPlayer("Player 1"));
+        game.addPlayer(new WarPlayer("Player 2"));
+        game.play();
         
-        // Add two players to the game
-        WarPlayer player1 = new WarPlayer("Player 1");
-        WarPlayer player2 = new WarPlayer("Player 2");
-
-        warGame.addPlayer(player1);
-        warGame.addPlayer(player2);
-        
-        // Start the game
-        warGame.play();
     }
 }
